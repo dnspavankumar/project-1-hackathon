@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medic Vision</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .glass-morphism {
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .grid-background {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        
+        .blob {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="min-h-screen grid-background bg-gray-950 text-gray-200 relative">
+    <!-- Background blobs -->
+    <div class="blob top-20 left-20"></div>
+    <div class="blob bottom-20 right-20"></div>
+    
+    <div class="container mx-auto px-4 py-12 max-w-6xl relative z-10">
+        <!-- Header -->
+        <header class="flex flex-col items-center justify-center mb-16 text-center">
+            <div class="relative mb-4">
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary-600 to-purple-600 rounded-full blur opacity-60 animate-pulse-slow"></div>
+                <div class="relative bg-gray-900 rounded-full p-6">
+                    <i class="fas fa-microscope text-4xl text-primary-400"></i>
+                </div>
+            </div>
+            <h1 class="text-5xl font-extrabold tracking-tight mb-2">
+                <span class="gradient-text">Medic Vision</span>
+            </h1>
+            <p class="text-gray-400 max-w-xl">Advanced medical image analysis powered by state-of-the-art AI models</p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- Upload Image Card -->
+            <div class="glass-morphism rounded-2xl shadow-xl p-6 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center mr-3">
+                        <i class="fas fa-upload text-primary-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Image Upload</h2>
+                </div>
+                
+                <div class="border-2 border-dashed border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-900/50 hover:bg-gray-800/30 transition-all cursor-pointer" id="drop-area">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-gray-600 mb-4"></i>
+                    <p class="text-gray-400 text-center mb-4">Drag and drop your medical image here or click to browse</p>
+                    <button id="upload-btn" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-all flex items-center">
+                        <i class="fas fa-file-medical mr-2"></i> Select Image
+                    </button>
+                    
+                    <input type="file" id="image-upload" accept="image/*" class="hidden" />
+                </div>
+                
+                <div id="image-container" class="hidden mt-6 rounded-xl overflow-hidden border border-gray-700">
+                    <div class="relative">
+                        <img id="display-image" src="" alt="Uploaded image" class="w-full h-auto" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end justify-end p-3">
+                            <button class="bg-gray-900/80 text-white p-2 rounded-full hover:bg-gray-800" id="remove-image">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ask Question Card -->
+            <div class="glass-morphism rounded-2xl shadow-xl p-6 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="h-10 w-10 rounded-full bg-blue-900/50 flex items-center justify-center mr-3">
+                        <i class="fas fa-comment-medical text-blue-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Query Interface</h2>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="query-type" class="block text-sm font-medium text-gray-400 mb-2">Analysis Type</label>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <button class="py-2 px-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg flex items-center justify-center border border-primary-600 active" id="diagnostic-btn">
+                            <i class="fas fa-heartbeat mr-2"></i> Diagnostic
+                        </button>
+                        <button class="py-2 px-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg flex items-center justify-center" id="research-btn">
+                            <i class="fas fa-flask mr-2"></i> Research
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="query-input" class="block text-sm font-medium text-gray-400 mb-2">Query</label>
+                        <textarea id="query-input" rows="4" placeholder="What would you like to know about this image? (e.g., 'Is there any abnormality visible?', 'What might this indicate?')"
+                            class="w-full p-3 bg-gray-900 border border-gray-700 text-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"></textarea>
+                    </div>
+                    
+                    <button id="submit-query" class="w-full bg-gradient-to-r from-blue-600 to-primary-600 hover:from-blue-700 hover:to-primary-700 text-white font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center">
+                        <span class="mr-2">Analyze Image</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Llama Response -->
+            <div class="glass-morphism rounded-2xl shadow-xl p-6 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="h-10 w-10 rounded-full bg-green-900/50 flex items-center justify-center mr-3">
+                        <i class="fas fa-brain text-green-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Primary Analysis</h2>
+                </div>
+                
+                <div id="response-container-llama11b" class="hidden">
+                    <div class="animate-pulse flex space-x-4 mb-4" id="llama11b-loading">
+                        <!-- loading content -->
+                    </div>
+                    <div class="animate-pulse flex space-x-4 mb-4 mb-4">
+                        <div class="flex-1 space-y-4 py-1">
+                            <div class="h-4 bg-gray-700 rounded w-3/4"></div>
+                            <div class="space-y-2">
+                                <div class="h-4 bg-gray-700 rounded"></div>
+                                <div class="h-4 bg-gray-700 rounded w-5/6"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="response-output-llama11b" class="hidden mt-4 bg-gray-900/50 p-6 rounded-xl border border-gray-800 prose prose-invert max-w-none">
+                    <!-- Content will be populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Llava Response -->
+            <div class="glass-morphism rounded-2xl shadow-xl p-6 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="h-10 w-10 rounded-full bg-purple-900/50 flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-network text-purple-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Advanced Analysis</h2>
+                </div>
+                
+                <div id="response-container-llama90b" class="hidden">
+                    <div class="animate-pulse flex space-x-4 mb-4" id="llama90b-loading">
+                        <!-- loading content -->
+                    </div>
+                    <div class="animate-pulse flex space-x-4 mb-4">
+                        <div class="flex-1 space-y-4 py-1">
+                            <div class="h-4 bg-gray-700 rounded w-3/4"></div>
+                            <div class="space-y-2">
+                                <div class="h-4 bg-gray-700 rounded"></div>
+                                <div class="h-4 bg-gray-700 rounded w-5/6"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="response-output-llama90b" class="hidden mt-4 bg-gray-900/50 p-6 rounded-xl border border-gray-800 prose prose-invert max-w-none">
+                    <!-- Content will be populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-container" class="hidden mt-8 glass-morphism p-4 text-white rounded-xl border-l-4 border-red-500">
+            <div class="flex items-center">
+                <div class="mr-3">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-medium">Error</h3>
+                    <p id="error-text" class="text-gray-400"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-500 text-sm">
+            <p>© 2025 Medic Vision • Advanced Medical Imaging Analysis</p>
+            <p class="mt-2 flex items-center justify-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-900 text-primary-300 mr-2">
+                    <span class="w-2 h-2 bg-primary-400 rounded-full mr-1"></span>
+                    Models: LLaMA-3 11B • LLaVA 90B
+                </span>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadBtn = document.getElementById('upload-btn');
+            const dropArea = document.getElementById('drop-area');
+            const imageUpload = document.getElementById('image-upload');
+            const displayImage = document.getElementById('display-image');
+            const imageContainer = document.getElementById('image-container');
+            const removeImageBtn = document.getElementById('remove-image');
+            const queryInput = document.getElementById('query-input');
+            const submitQuery = document.getElementById('submit-query');
+            const responseLlama = document.getElementById('response-container-llama11b');
+            const responseLlava = document.getElementById('response-container-llama90b');
+            const responseLlamaOutput = document.getElementById('response-output-llama11b');
+            const responseLlavaOutput = document.getElementById('response-output-llama90b');
+            const errorContainer = document.getElementById('error-container');
+            const errorText = document.getElementById('error-text');
+            const diagnosticBtn = document.getElementById('diagnostic-btn');
+            const researchBtn = document.getElementById('research-btn');
+
+            // Toggle analysis type
+            diagnosticBtn.addEventListener('click', () => {
+                diagnosticBtn.classList.add('border', 'border-primary-600');
+                researchBtn.classList.remove('border', 'border-primary-600');
+                queryInput.placeholder = "What would you like to know about this image? (e.g., 'Is there any abnormality visible?', 'What might this indicate?')";
+            });
+            
+            researchBtn.addEventListener('click', () => {
+                researchBtn.classList.add('border', 'border-primary-600');
+                diagnosticBtn.classList.remove('border', 'border-primary-600');
+                queryInput.placeholder = "What research insights can be drawn from this image? (e.g., 'Compare this to similar cases', 'What novel features are present?')";
+            });
+
+            // Click to Upload button trigger
+            uploadBtn.addEventListener('click', () => {
+                imageUpload.click();
+            });
+
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('bg-gray-800/50');
+                dropArea.classList.add('border-primary-500');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('bg-gray-800/50');
+                dropArea.classList.remove('border-primary-500');
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            function handleFiles(files) {
+                if (files[0]) {
+                    const file = files[0];
+                    uploadFile(file);
+                }
+            }
+            
+            function uploadFile(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    displayImage.src = e.target.result;
+                    imageContainer.classList.remove('hidden');
+                    dropArea.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+                imageUpload.files = new DataTransfer().files;
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                imageUpload.files = dataTransfer.files;
+            }
+
+            // Display uploaded image
+            imageUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    uploadFile(file);
+                }
+            });
+            
+            // Remove image
+            removeImageBtn.addEventListener('click', () => {
+                imageContainer.classList.add('hidden');
+                dropArea.classList.remove('hidden');
+                imageUpload.value = '';
+            });
+
+            // Submit Query
+            submitQuery.addEventListener('click', async () => {
+                const image = imageUpload.files[0];
+                const query = queryInput.value;
+
+                if (!image || !query) {
+                    showError('Please upload an image and enter a query to proceed with analysis.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', image);
+                formData.append('query', query);
+
+                try {
+                    // Show loading indicators
+                    submitQuery.disabled = true;
+                    submitQuery.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Analyzing...';
+                    responseLlama.classList.remove('hidden');
+                    responseLlava.classList.remove('hidden');
+                    responseLlamaOutput.classList.add('hidden');
+                    responseLlavaOutput.classList.add('hidden');
+                    
+                    // Get loading elements
+                    const llama11bLoading = document.getElementById('llama11b-loading');
+                    const llama90bLoading = document.getElementById('llama90b-loading');
+
+                    const response = await fetch('/upload_and_query', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.detail || 'An error occurred during analysis. Please try again.');
+                    }
+
+                    // Hide loading animations
+                    llama11bLoading.classList.add('hidden');
+                    llama90bLoading.classList.add('hidden');
+
+                    // Display results
+                    responseLlamaOutput.innerHTML = marked.parse(result.llama);
+                    responseLlamaOutput.classList.remove('hidden');
+                    responseLlavaOutput.innerHTML = marked.parse(result.llava);
+                    responseLlavaOutput.classList.remove('hidden');
+                    errorContainer.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError(error.message);
+                } finally {
+                    submitQuery.disabled = false;
+                    submitQuery.innerHTML = '<span class="mr-2">Analyze Image</span><i class="fas fa-arrow-right"></i>';
+                }
+            });
+
+            function showError(message) {
+                errorText.textContent = message;
+                errorContainer.classList.remove('hidden');
+                responseLlama.classList.add('hidden');
+                responseLlava.classList.add('hidden');
+            }
+        });
+    </script>
+
+</body>
+</html>
